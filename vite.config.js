@@ -7,9 +7,8 @@ export default defineConfig({
     fastRefresh: true,
   })],
   server: {
-    // Ensures HMR works reliably
-    hmr: {
-      overlay: false
+    proxy: {
+      '/api': 'http://localhost:8000',
     }
   }
 })

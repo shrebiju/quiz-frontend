@@ -11,17 +11,12 @@ export default {
   plugins: [],
 }
 
-
 module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        background: '#242424', // Your dark color
-        foreground: 'rgba(255, 255, 255, 0.87)', // Your text color
-      },
-    },
-  },
-  // ... rest of config
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  // ...
 }
 
 

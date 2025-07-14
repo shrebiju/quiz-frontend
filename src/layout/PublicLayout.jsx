@@ -1,12 +1,12 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+// src/layout/PublicLayout.jsx
+import { Outlet } from 'react-router-dom'
 
-const PublicLayout = () => {
+export default function PublicLayout() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Outlet />
-    </main>
-  );
-};
-
-export default PublicLayout;
+    <div className="min-h-screen bg-gray-50"> {/* Keep subtle gray bg */}
+      <div className="container mx-auto p-4">
+        <Outlet /> {/* Clean layout without debug borders */}
+      </div>
+    </div>
+  )
+}

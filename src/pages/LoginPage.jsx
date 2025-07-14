@@ -3,45 +3,46 @@ import * as Yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const RegisterPage = () => {
-  const { register } = useAuth();
+const LoginPage = () => {
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const formik = useFormik({
-    initialValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
+    initialValues: { email: '', password: '' },
     validationSchema: Yup.object({
-      name: Yup.string().required('Required'),
       email: Yup.string().email('Invalid email').required('Required'),
-      password: Yup.string().min(6).required('Required'),
+      password: Yup.string().required('Required'),
     }),
     onSubmit: async (values) => {
       try {
-        await register(values);
-        navigate('/user/dashboard');
+        await login(values.email, values.password);
+    
+        // After login, check role from context
+        const role = localStorage.getItem("role"); // optional: if you want persistence
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
       } catch (err) {
-        alert('Registration failed');
+        alert("Login failed");
       }
     },
+    
+    // onSubmit: async (values) => {
+    //   try {
+    //     await login(values.email, values.password);
+    //     navigate('/user/dashboard'); // or /admin/dashboard based on role
+    //   } catch (err) {
+    //     alert('Login failed');
+    //   }
+    // },
   });
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 rounded shadow">
-      <h2 className="text-xl mb-4 font-bold">Register</h2>
+      <h2 className="text-xl mb-4 font-bold">Login</h2>
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-        <input
-          name="name"
-          placeholder="Name"
-          onChange={formik.handleChange}
-          className="w-full border px-3 py-2 rounded"
-        />
-        {formik.touched.name && formik.errors.name && (
-          <div className="text-red-500">{formik.errors.name}</div>
-        )}
-
         <input
           name="email"
           placeholder="Email"
@@ -54,8 +55,8 @@ const RegisterPage = () => {
 
         <input
           name="password"
-          placeholder="Password"
           type="password"
+          placeholder="Password"
           onChange={formik.handleChange}
           className="w-full border px-3 py-2 rounded"
         />
@@ -64,11 +65,11 @@ const RegisterPage = () => {
         )}
 
         <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
-          Register
+          Login
         </button>
       </form>
     </div>
   );
 };
 
-export default RegisterPage;
+export default LoginPage;
