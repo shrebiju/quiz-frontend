@@ -15,11 +15,9 @@ const LoginPage = () => {
     }),
     onSubmit: async (values) => {
       try {
-        await login(values.email, values.password);
-    
-        // After login, check role from context
-        const role = localStorage.getItem("role"); // optional: if you want persistence
-        if (role === "admin") {
+        const data = await login(values.email, values.password);
+        
+        if (data.user.role === "admin") {
           navigate("/admin/dashboard");
         } else {
           navigate("/user/dashboard");
@@ -27,16 +25,8 @@ const LoginPage = () => {
       } catch (err) {
         alert("Login failed");
       }
-    },
+    }
     
-    // onSubmit: async (values) => {
-    //   try {
-    //     await login(values.email, values.password);
-    //     navigate('/user/dashboard'); // or /admin/dashboard based on role
-    //   } catch (err) {
-    //     alert('Login failed');
-    //   }
-    // },
   });
 
   return (
