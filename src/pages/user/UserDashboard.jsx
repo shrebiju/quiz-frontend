@@ -1,7 +1,6 @@
-import React from 'react'
+import React from "react";
+const UserDashboard = () => {
+  return <div>User Dashboard</div>;
+};
 
-export const UserDashboard = () => {
-  return (
-    <div>UserDashboard</div>
-  )
-}
+export default UserDashboard;

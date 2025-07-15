@@ -1,8 +1,8 @@
-import { useAuth } from '../context/AuthContext';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { FaUserCircle, FaBars } from 'react-icons/fa';
+import { FaUserCircle } from 'react-icons/fa';
 import { MdLogout } from 'react-icons/md';
+import { useAuth } from '../context/AuthContext';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
@@ -15,18 +15,37 @@ const DashboardLayout = () => {
     navigate('/');
   };
 
-  const navItems = [
-    { label: 'Home', path: '/admin/dashboard' },
-    { label: 'Category', path: '/admin/category' },
-    { label: 'Difficulty Level', path: '/admin/difficulty' },
-    { label: 'Multiple Question', path: '/admin/questions' },
-  ];
+  const basePath = `/${user?.role}`;
+
+  // Role-specific navigation
+  const navItems = user?.role === 'admin'
+    ? [
+        { label: 'Home', path: `${basePath}/dashboard` },
+        { label: 'Categories', path: `${basePath}/category` },
+        // { label: 'Categories', path: '/admin/category' },
+        { label: 'Difficulty Level', path: `${basePath}/difficultyLevel` },
+        { label: 'Multiple Question', path: `${basePath}/questions` },
+        { label: 'Answer Management', path: `${basePath}/answers` },
+        { label: 'Attempt Results', path: `${basePath}/attemptResults` },
+        { label: 'Quiz Form', path: `${basePath}/quizForm` },
+      ]
+    : [
+        { label: 'Home', path: `${basePath}/dashboard` },
+        
+        { label: 'View Quiz', path: `${basePath}/quiz` },
+        { label: 'Play Quiz', path: `${basePath}/quiz/:quizId/play` },
+
+        // { label: 'Create Quiz', path: `${basePath}/quiz/create` },
+        { label: 'View Score', path: `${basePath}/score` },
+      ];
 
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="w-64 bg-blue-800 text-white flex flex-col p-6 space-y-4">
-        <h2 className="text-2xl font-bold mb-6">Quiz Admin</h2>
+        <h2 className="text-2xl font-bold mb-6 capitalize">
+          {user?.role} Panel
+        </h2>
         {navItems.map((item) => (
           <Link
             key={item.path}
@@ -40,12 +59,12 @@ const DashboardLayout = () => {
         ))}
       </aside>
 
-      {/* Main content */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <header className="flex items-center justify-between bg-white shadow px-6 py-4">
           <h1 className="text-lg font-semibold text-gray-700 capitalize">
-            {user?.role === 'admin' ? 'Admin' : 'User'} Dashboard
+            {user?.role} Dashboard
           </h1>
 
           <div className="relative">
