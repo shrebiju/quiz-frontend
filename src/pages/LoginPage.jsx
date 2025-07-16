@@ -1,11 +1,17 @@
+import React, { useState } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import axios from '../utils/axios';
+import ButtonCard from '../components/ButtonCard';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: { email: '', password: '' },
@@ -14,19 +20,21 @@ const LoginPage = () => {
       password: Yup.string().required('Required'),
     }),
     onSubmit: async (values) => {
+      setIsLoading(true);
       try {
         const data = await login(values.email, values.password);
-        
         if (data.user.role === "admin") {
           navigate("/admin/dashboard");
         } else {
           navigate("/user/dashboard");
         }
+        toast.success('Login successful!');
       } catch (err) {
-        alert("Login failed");
+        // toast.error(err.response?.data?.message || 'Login failed. Please try again.');
+      } finally {
+        setIsLoading(false);
       }
     }
-    
   });
 
   return (
@@ -54,9 +62,15 @@ const LoginPage = () => {
           <div className="text-red-500">{formik.errors.password}</div>
         )}
 
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
+        <ButtonCard
+          type="submit"
+          color="primary"
+          size="medium"
+          loading={isLoading}
+          fullWidth
+        >
           Login
-        </button>
+        </ButtonCard>
       </form>
     </div>
   );

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from '../utils/axios';
+import { toast } from 'react-toastify';
 
 const AuthContext = createContext();
 
@@ -8,17 +9,32 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // Track fetch status
 
   const login = async (email, password) => {
-    await axios.get('/sanctum/csrf-cookie');
-    const res = await axios.post('/api/login', { email, password });
+    try {
+      // Show loading toast
+      // const toastId = toast.loading('Logging in...');
+      
+      await axios.get('/sanctum/csrf-cookie');
+      const res = await axios.post('/api/login', { email, password });
+  
+      // Update to success toast
+      toast.update({
+        render: 'Login successful!',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+      });
+      setUser(res.data.user);
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('role', res.data.user.role);
+      return res.data;
+    } catch (error) {
+      toast.dismiss(); 
+      toast.error(
+        error.response?.data?.message,
+        { autoClose: 5000 }
+      );
 
-    console.log("✅ Logged in user:", res.data.user);
-    console.log("✅ Token received:", res.data.token);
-
-    setUser(res.data.user);
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('role', res.data.user.role);
-
-    return res.data;
+    }
   };
 
   const register = async (data) => {

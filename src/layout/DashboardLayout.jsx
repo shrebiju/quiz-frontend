@@ -3,16 +3,28 @@ import { useState } from 'react';
 import { FaUserCircle } from 'react-icons/fa';
 import { MdLogout } from 'react-icons/md';
 import { useAuth } from '../context/AuthContext';
+import ButtonCard from '../components/ButtonCard';
+import { toast } from 'react-toastify';
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/');
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      toast.success('Logged out successfully!');
+      navigate('/');
+    } catch (error) {
+      toast.error('Failed to logout. Please try again.');
+    } finally {
+      setIsLoggingOut(false);
+      setShowDropdown(false);
+    }
   };
 
   const basePath = `/${user?.role}`;
@@ -22,7 +34,6 @@ const DashboardLayout = () => {
     ? [
         { label: 'Home', path: `${basePath}/dashboard` },
         { label: 'Categories', path: `${basePath}/category` },
-        // { label: 'Categories', path: '/admin/category' },
         { label: 'Difficulty Level', path: `${basePath}/difficultyLevel` },
         { label: 'Multiple Question', path: `${basePath}/questions` },
         { label: 'Answer Management', path: `${basePath}/answers` },
@@ -31,11 +42,8 @@ const DashboardLayout = () => {
       ]
     : [
         { label: 'Home', path: `${basePath}/dashboard` },
-        
         { label: 'View Quiz', path: `${basePath}/quiz` },
         { label: 'Play Quiz', path: `${basePath}/quiz/:quizId/play` },
-
-        // { label: 'Create Quiz', path: `${basePath}/quiz/create` },
         { label: 'View Score', path: `${basePath}/score` },
       ];
 
@@ -78,13 +86,17 @@ const DashboardLayout = () => {
                 <p><strong>Role:</strong> {user?.role}</p>
                 <p><strong>Name:</strong> {user?.name}</p>
                 <p><strong>Email:</strong> {user?.email}</p>
-                <button
+                <ButtonCard
                   onClick={handleLogout}
-                  className="mt-2 w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded flex items-center justify-center gap-2"
+                  color="danger"
+                  size="small"
+                  loading={isLoggingOut}
+                  fullWidth
+                  className="mt-2 flex items-center justify-center gap-2"
                 >
                   <MdLogout />
                   Logout
-                </button>
+                </ButtonCard>
               </div>
             )}
           </div>
