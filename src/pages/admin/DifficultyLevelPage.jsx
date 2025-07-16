@@ -92,7 +92,6 @@ const DifficultyPage = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">Difficulty Level Management</h2>
-      
       <form onSubmit={formik.handleSubmit} className="mb-8 bg-white p-4 rounded shadow">
         <div className="mb-4">
           <label htmlFor="name" className="block mb-2 font-medium">

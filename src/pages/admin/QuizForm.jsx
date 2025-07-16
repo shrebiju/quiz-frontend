@@ -1,87 +1,124 @@
-import { useEffect, useState } from "react";
-import axios from "../../utils/axios";
+import React, { useEffect,useState } from 'react';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import axios from '../../utils/axios';
+import { toast } from 'react-toastify';
+import ButtonCard from '../../components/ButtonCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const QuizForm = () => {
-  const [title, setTitle] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [difficultyId, setDifficultyId] = useState("");
-  const [timeLimit, setTimeLimit] = useState("");
   const [categories, setCategories] = useState([]);
   const [difficulties, setDifficulties] = useState([]);
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState({
+    categories: true,
+    difficulties: true,
+    submitting: false
+  });
+
+  const validationSchema = Yup.object({
+    title: Yup.string()
+      .required('Quiz title is required')
+      .min(5, 'Must be at least 5 characters')
+      .max(100, 'Must be 100 characters or less'),
+    categoryId: Yup.string().required('Category is required'),
+    difficultyId: Yup.string().required('Difficulty level is required'),
+    timeLimit: Yup.number()
+      .required('Time limit is required')
+      .min(1, 'Must be at least 1 minute')
+      .max(300, 'Must be 300 minutes or less')
+      .integer('Must be a whole number')
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      title: '',
+      categoryId: '',
+      difficultyId: '',
+      timeLimit: ''
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      setLoading(prev => ({ ...prev, submitting: true }));
+      try {
+        await axios.post("/api/admin/quizzes", {
+          title: values.title,
+          category_id: values.categoryId,
+          difficulty_level_id: values.difficultyId,
+          time_limit_minutes: values.timeLimit,
+        });
+        
+        toast.success('Quiz created successfully!');
+        formik.resetForm();
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to create quiz');
+      } finally {
+        setLoading(prev => ({ ...prev, submitting: false }));
+      }
+    },
+  });
 
   useEffect(() => {
-    fetchCategories();
-    fetchDifficulties();
+    const fetchData = async () => {
+      try {
+        const [categoriesRes, difficultiesRes] = await Promise.all([
+          axios.get("/api/admin/categories"),
+          axios.get("/api/admin/difficulty-levels")
+        ]);
+        
+        setCategories(categoriesRes.data);
+        setDifficulties(difficultiesRes.data);
+      } catch (error) {
+        toast.error('Failed to load form data');
+      } finally {
+        setLoading({
+          categories: false,
+          difficulties: false,
+          submitting: false
+        });
+      }
+    };
+    
+    fetchData();
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      const res = await axios.get("/api/admin/categories");
-      setCategories(res.data);
-    } catch (err) {
-      alert("Error fetching categories");
-    }
-  };
-
-  const fetchDifficulties = async () => {
-    try {
-      const res = await axios.get("/api/admin/difficulty-levels");
-      setDifficulties(res.data);
-    } catch (err) {
-      alert("Error fetching difficulty levels");
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!title || !categoryId || !difficultyId || !timeLimit) {
-      alert("All fields are required");
-      return;
-    }
-
-    try {
-      const res = await axios.post("/api/admin/quizzes", {
-        title,
-        category_id: categoryId,
-        difficulty_level_id: difficultyId,
-        time_limit_minutes: timeLimit,
-      });
-
-      setMessage("✅ Quiz created successfully!");
-      setTitle("");
-      setCategoryId("");
-      setDifficultyId("");
-      setTimeLimit("");
-    } catch (err) {
-      alert("Error creating quiz");
-    }
-  };
-
   return (
-    <div className="max-w-xl mx-auto bg-white p-6 shadow rounded">
-      <h1 className="text-2xl font-bold mb-4">Create New Quiz</h1>
+    <div className="p-6 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Create New Quiz</h1>
 
-      {message && <p className="mb-4 text-green-600">{message}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={formik.handleSubmit} className="bg-white p-6 rounded shadow space-y-4">
+        {/* Title Field */}
         <div>
-          <label className="block mb-1 font-medium">Title</label>
+          <label htmlFor="title" className="block mb-2 font-medium">
+            Quiz Title
+          </label>
           <input
+            id="title"
+            name="title"
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.title}
+            className="w-full p-2 border rounded"
             placeholder="Enter quiz title"
           />
+          {formik.touched.title && formik.errors.title && (
+            <div className="text-red-500 mt-1">{formik.errors.title}</div>
+          )}
         </div>
 
+        {/* Category Field */}
         <div>
-          <label className="block mb-1 font-medium">Category</label>
+          <label htmlFor="categoryId" className="block mb-2 font-medium">
+            Category
+          </label>
           <select
-            value={categoryId}
-            onChange={(e) => setCategoryId(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
+            id="categoryId"
+            name="categoryId"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.categoryId}
+            className="w-full p-2 border rounded"
+            disabled={loading.categories}
           >
             <option value="">Select category</option>
             {categories.map((cat) => (
@@ -90,14 +127,24 @@ const QuizForm = () => {
               </option>
             ))}
           </select>
+          {formik.touched.categoryId && formik.errors.categoryId && (
+            <div className="text-red-500 mt-1">{formik.errors.categoryId}</div>
+          )}
         </div>
 
+        {/* Difficulty Field */}
         <div>
-          <label className="block mb-1 font-medium">Difficulty Level</label>
+          <label htmlFor="difficultyId" className="block mb-2 font-medium">
+            Difficulty Level
+          </label>
           <select
-            value={difficultyId}
-            onChange={(e) => setDifficultyId(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
+            id="difficultyId"
+            name="difficultyId"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.difficultyId}
+            className="w-full p-2 border rounded"
+            disabled={loading.difficulties}
           >
             <option value="">Select difficulty</option>
             {difficulties.map((diff) => (
@@ -106,26 +153,42 @@ const QuizForm = () => {
               </option>
             ))}
           </select>
+          {formik.touched.difficultyId && formik.errors.difficultyId && (
+            <div className="text-red-500 mt-1">{formik.errors.difficultyId}</div>
+          )}
         </div>
 
+        {/* Time Limit Field */}
         <div>
-          <label className="block mb-1 font-medium">Time Limit (in minutes)</label>
+          <label htmlFor="timeLimit" className="block mb-2 font-medium">
+            Time Limit (minutes)
+          </label>
           <input
+            id="timeLimit"
+            name="timeLimit"
             type="number"
             min="1"
-            value={timeLimit}
-            onChange={(e) => setTimeLimit(e.target.value)}
-            className="w-full border px-3 py-2 rounded"
+            max="300"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.timeLimit}
+            className="w-full p-2 border rounded"
             placeholder="Enter time limit"
           />
+          {formik.touched.timeLimit && formik.errors.timeLimit && (
+            <div className="text-red-500 mt-1">{formik.errors.timeLimit}</div>
+          )}
         </div>
 
-        <button
+        <ButtonCard
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          color="primary"
+          size="medium"
+          loading={loading.submitting}
+          className="w-full"
         >
           Create Quiz
-        </button>
+        </ButtonCard>
       </form>
     </div>
   );
