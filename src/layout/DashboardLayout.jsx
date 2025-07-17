@@ -45,6 +45,8 @@ const DashboardLayout = () => {
         { label: 'View Quiz', path: `${basePath}/quiz` },
         { label: 'Play Quiz', path: `${basePath}/quiz/:quizId/play` },
         { label: 'View Score', path: `${basePath}/score` },
+        { label: 'History Page', path: `${basePath}/my-attempts` },
+
       ];
 
   return (

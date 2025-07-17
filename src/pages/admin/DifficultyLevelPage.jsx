@@ -110,7 +110,7 @@ const DifficultyPage = () => {
             <div className="text-red-500 mt-1">{formik.errors.name}</div>
           )}
         </div>
-        
+
         <ButtonCard
           type="submit"
           color={editId ? "primary" : "success"}

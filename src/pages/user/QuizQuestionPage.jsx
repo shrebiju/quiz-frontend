@@ -1,55 +1,42 @@
 import { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
+import ButtonCard from '../../components/ButtonCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import Timer from '../../components/Timer'; // Import the Timer component
 
-const QuizQuestionPage = () => {
+const QuizPlayer = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Get data passed from QuizStartPage
-  const { attemptId, quiz } = location.state || {};
-  
-  const [questions, setQuestions] = useState(quiz?.questions || []);
+  const { attemptId, quiz, timeLimit } = location.state || {};
+  const [questions, setQuestions] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState((quiz?.time_limit_minutes || 10) * 60);
-  const [loading, setLoading] = useState(!quiz?.questions);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // If questions weren't passed in state, fetch them
+    const fetchQuestions = async () => {
+      try {
+        const response = await axios.get(`/api/quiz-attempts/${attemptId}/questions`);
+        setQuestions(response.data.questions);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load questions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (!quiz?.questions) {
-      const fetchQuestions = async () => {
-        try {
-          const response = await axios.get(`/api/quizzes/${id}/questions`);
-          setQuestions(response.data.questions || []);
-        } catch (err) {
-          setError('Failed to load questions');
-          console.error('Error fetching questions:', err);
-        } finally {
-          setLoading(false);
-        }
-      };
       fetchQuestions();
+    } else {
+      setQuestions(quiz.questions);
+      setLoading(false);
     }
+  }, [attemptId, quiz]);
 
-    // Timer logic
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [id, quiz]);
-
-  // If no attemptId or quiz, redirect back
   useEffect(() => {
     if (!attemptId || !quiz) {
       navigate(`/user/quiz/${id}/start`);
@@ -90,33 +77,40 @@ const QuizQuestionPage = () => {
       navigate(`/user/quiz/${id}/results`, {
         state: {
           score: response.data.score,
-          totalQuestions: response.data.total_questions,
-          quizTitle: quiz.title
+          totalQuestions: questions.length,
+          quizTitle: quiz.title,
+          timeSpent: timeLimit - (location.state?.timeLeft || 0) // Use timeLeft from Timer if available
         }
       });
     } catch (err) {
-      setError('Failed to submit quiz');
-      console.error('Error submitting quiz:', err);
+      setError(err.response?.data?.message || 'Failed to submit quiz');
     }
   };
 
-  if (loading) return <div className="p-6">Loading questions...</div>;
+  if (loading) return <LoadingSpinner />;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
   if (!questions.length) return <div className="p-6">No questions available for this quiz</div>;
 
   const currentQuestion = questions[currentQuestionIndex];
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <div className="flex justify-between mb-4">
-        <div>
+      <div className="flex justify-between items-center mb-4">
+        <div className="text-lg font-medium">
           Question {currentQuestionIndex + 1} of {questions.length}
         </div>
-        <div>
-          Time Left: {minutes}:{seconds < 10 ? `0${seconds}` : seconds}
-        </div>
+        <Timer 
+          initialTime={timeLimit} 
+          onTimeout={handleSubmit} 
+        />
+      </div>
+
+      <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+        <div 
+          className="bg-blue-600 h-2 rounded-full" 
+          style={{ width: `${progress}%` }}
+        ></div>
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -124,52 +118,53 @@ const QuizQuestionPage = () => {
           {currentQuestion.question_text}
         </h2>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {currentQuestion.answers?.map(answer => (
-            <div key={answer.id} className="flex items-center">
-              <input
-                type="radio"
-                id={`answer-${answer.id}`}
-                name={`question-${currentQuestion.id}`}
-                checked={selectedAnswers[currentQuestion.id] === answer.id}
-                onChange={() => handleAnswerSelect(currentQuestion.id, answer.id)}
-                className="mr-2"
-              />
-              <label htmlFor={`answer-${answer.id}`}>
-                {answer.answer_text}
-              </label>
+            <div 
+              key={answer.id} 
+              className={`p-3 border rounded cursor-pointer transition-colors ${
+                selectedAnswers[currentQuestion.id] === answer.id 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'hover:bg-gray-50'
+              }`}
+              onClick={() => handleAnswerSelect(currentQuestion.id, answer.id)}
+            >
+              {answer.answer_text}
             </div>
           ))}
         </div>
       </div>
 
       <div className="flex justify-between">
-        <button
+        <ButtonCard
           onClick={handlePrevious}
           disabled={currentQuestionIndex === 0}
-          className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50"
+          color="secondary"
+          size="medium"
         >
           Previous
-        </button>
+        </ButtonCard>
         
         {currentQuestionIndex === questions.length - 1 ? (
-          <button
+          <ButtonCard
             onClick={handleSubmit}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            color="primary"
+            size="medium"
           >
             Submit Quiz
-          </button>
+          </ButtonCard>
         ) : (
-          <button
+          <ButtonCard
             onClick={handleNext}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            color="primary"
+            size="medium"
           >
             Next
-          </button>
+          </ButtonCard>
         )}
       </div>
     </div>
   );
 };
 
-export default QuizQuestionPage;
+export default QuizPlayer;

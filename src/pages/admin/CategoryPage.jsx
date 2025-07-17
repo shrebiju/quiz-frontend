@@ -147,8 +147,9 @@ const CategoryManagement = () => {
           <NoDataFound message="No categories found. Add your first category!" />
         ) : (
           <div className="space-y-2">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <div key={category.id} className="flex items-center justify-between p-3 border rounded hover:bg-gray-50">
+                <span className="text-gray-500 w-6 text-right">{index + 1}.</span>
                 <span className="font-medium">{category.name}</span>
                 <div className="flex gap-2">
                   <ButtonCard

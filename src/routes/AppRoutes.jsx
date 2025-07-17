@@ -21,6 +21,7 @@ import QuizListPage from "../pages/user/QuizListPage";
 import QuizQuestionPage from "../pages/user/QuizQuestionPage";
 import QuizStartPage from "../pages/user/QuizStartPage";
 import QuizResultsPage from "../pages/user/QuizResultsPage";
+import QuizHistoryPage from "../pages/user/QuizHistoryPage";
 
 const RoleProtectedRoute = ({ role, children }) => {
   const { user, loading } = useAuth();
@@ -82,6 +83,8 @@ const AppRoutes = () => {
 
   <Route path="/user/quiz/:id/questions" element={<QuizQuestionPage />} />
   <Route path="/user/quiz/:id/results" element={<QuizResultsPage />} />
+  <Route path="my-attempts" element={<QuizHistoryPage />} />
+
     {/* <Route path="quiz/:quizId/play" element={<QuizPlayer />} /> */}
 
 
