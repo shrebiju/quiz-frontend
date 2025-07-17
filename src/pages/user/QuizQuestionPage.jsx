@@ -5,6 +5,7 @@ import ButtonCard from '../../components/ButtonCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import Timer from '../../components/Timer';
 import * as Yup from 'yup';
+import NoDataFound from '../../components/NoDataFound';
 
 const QuizPlayer = () => {
   const { id } = useParams();
@@ -26,6 +27,7 @@ const QuizPlayer = () => {
       .nullable()
   });
 
+  console.log(questions,"questionsquestionsquestionsquestions")
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
@@ -117,7 +119,28 @@ const QuizPlayer = () => {
 
   if (loading) return <LoadingSpinner />;
   if (error) return <div className="p-6 text-red-500">{error}</div>;
-  if (!questions.length) return <div className="p-6">No questions available for this quiz</div>;
+  
+  if (!questions.length) {
+    return (
+      <div className="p-6">       
+        <NoDataFound message="This quiz currently has no questions. Please try another quiz." />
+      </div>
+    );
+  }
+  // if (questions?.length === 0) {
+  //   return (
+  //     <div className="p-6">
+  //       <NoDataFound message="This quiz currently has no questions. Please try another quiz." />
+  //     </div>
+  //   );
+  // }
+  // if (!questions.length) return <NoDataFound message="This Quiz have not any question for now. Please Try another Quiz for now on" />;
+
+
+  // if (!questions || questions.length === 0) {
+  //   return <NoDataFound message="This quiz has no questions available. Please try another quiz." />
+  // };
+  
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;

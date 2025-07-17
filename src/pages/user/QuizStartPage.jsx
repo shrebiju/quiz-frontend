@@ -11,28 +11,59 @@ const QuizStartPage = () => {
   const [quiz, setQuiz] = useState(location.state?.quiz || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [hasMinimumAnswers, setHasMinimumAnswers] = useState(false);
 
+console.log("loadingloading",loading)
+  console.log(quiz,"quizquizquizquiz")
+  // const fetchQuiz = async () => {
+  // const res = await axios.get(`/api/quizzes/${id}`);
+  // console.log(testresposne,res)
+  // }
+  // console.log(res,"testresposne");
   useEffect(() => {
     if (!quiz) {
       const fetchQuiz = async () => {
         try {
           const res = await axios.get(`/api/quizzes/${id}`);
+          console.log(res,"request data show me");
           setQuiz(res.data.quiz);
+          checkMinimumAnswers(res.data.quiz);
         } catch (err) {
           setError('Failed to load quiz details');
         }
       };
       fetchQuiz();
+    } else {
+      checkMinimumAnswers(quiz);
     }
   }, [id, quiz]);
 
+  const checkMinimumAnswers = (unknwondata) => {
+    console.log(unknwondata,"unknwondataunknwondata")
+    if (!unknwondata?.questions) return false;
+    
+    // Check if all questions have at least one answer
+    const allQuestionsValid = unknwondata.questions.every(
+      question => question.answers && question.answers.length > 0
+    );
+    
+    setHasMinimumAnswers(allQuestionsValid);
+    return allQuestionsValid;
+  };
+
   const startQuiz = async () => {
-    setLoading(true);
+     setLoading(true);
+    console.log(hasMinimumAnswers,"hasMinimumAnswers")
     try {
+      // if (!hasMinimumAnswers) {
+      //   throw new Error('Each question must have at least one answer');
+      // }
+      // Reminder code in here reposne i need to see each answer as one answer or not if not then i need to throw validation
       const response = await axios.get(`/api/quizzes/${id}/start`, {
         category_id: quiz.category_id,
         difficulty_level_id: quiz.difficulty_level_id
       });
+      console.log(response,"testResponse");
       
       navigate(`/user/quiz/${id}/questions`, {
         state: { 
@@ -42,11 +73,30 @@ const QuizStartPage = () => {
         }
       });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to start quiz');
+      setError(err.response?.data?.message || 'Failed to start quiz still in progress for more question and answer as their is no question or answer in this section');
       setLoading(false);
     }
   };
 
+
+  // const startQuiz = async () => {
+  //   setLoading(true);
+  //   console.log(hasMinimumAnswers, "hasMinimumAnswers")
+  //   try {
+  //     if (!hasMinimumAnswers) {
+  //       throw new Error('Each question must have at least one answer');
+  //     }
+  
+  //     const response = await axios.get(`/api/quizzes/${id}/start`, {
+  //       category_id: quiz.category_id,
+  //       difficulty_level_id: quiz.difficulty_level_id
+  //     });
+  //     // ... rest of the code
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || 'Failed to start quiz');
+  //     setLoading(false);
+  //   }
+  // };
   return (
     <div className="p-6 max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
       <div className="text-center mb-8">
@@ -101,6 +151,11 @@ const QuizStartPage = () => {
         </div>
       )}
   
+      {quiz && !hasMinimumAnswers && (
+        <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700">
+          <p>Cannot start quiz: Each Quiz must have at least five question and have one answer of each question.</p>
+        </div>
+      )}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700">
           <p>{error}</p>

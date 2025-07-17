@@ -9,7 +9,7 @@ const QuizHistoryPage = () => {
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+console.log(attempts,"attemptsattemptsattempts")
   useEffect(() => {
     const fetchAttempts = async () => {
       try {

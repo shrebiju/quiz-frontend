@@ -28,25 +28,22 @@ const DashboardLayout = () => {
   };
 
   const basePath = `/${user?.role}`;
-
-  // Role-specific navigation
   const navItems = user?.role === 'admin'
     ? [
         { label: 'Home', path: `${basePath}/dashboard` },
         { label: 'Categories', path: `${basePath}/category` },
         { label: 'Difficulty Level', path: `${basePath}/difficultyLevel` },
+        { label: 'Quiz Form', path: `${basePath}/quizForm` },
         { label: 'Multiple Question', path: `${basePath}/questions` },
         { label: 'Answer Management', path: `${basePath}/answers` },
         { label: 'Attempt Results', path: `${basePath}/attemptResults` },
-        { label: 'Quiz Form', path: `${basePath}/quizForm` },
       ]
     : [
         { label: 'Home', path: `${basePath}/dashboard` },
         { label: 'View Quiz', path: `${basePath}/quiz` },
-        { label: 'Play Quiz', path: `${basePath}/quiz/:quizId/play` },
-        { label: 'View Score', path: `${basePath}/score` },
+        // { label: 'Play Quiz', path: `${basePath}/quiz/:quizId/play` },
+        // { label: 'View Score', path: `${basePath}/score` },
         { label: 'History Page', path: `${basePath}/my-attempts` },
-
       ];
 
   return (
@@ -103,8 +100,6 @@ const DashboardLayout = () => {
             )}
           </div>
         </header>
-
-        {/* Page Content */}
         <main className="p-6 bg-gray-100 flex-1 overflow-y-auto">
           <Outlet />
         </main>

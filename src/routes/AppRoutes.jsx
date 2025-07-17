@@ -23,6 +23,7 @@ import QuizStartPage from "../pages/user/QuizStartPage";
 import QuizResultsPage from "../pages/user/QuizResultsPage";
 import QuizHistoryPage from "../pages/user/QuizHistoryPage";
 
+
 const RoleProtectedRoute = ({ role, children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div className="p-4">Loading...</div>;

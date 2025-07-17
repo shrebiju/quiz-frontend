@@ -6,13 +6,9 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // Track fetch status
-
+  const [loading, setLoading] = useState(true); 
   const login = async (email, password) => {
-    try {
-      // Show loading toast
-      // const toastId = toast.loading('Logging in...');
-      
+    try {      
       await axios.get('/sanctum/csrf-cookie');
       const res = await axios.post('/api/login', { email, password });
   
