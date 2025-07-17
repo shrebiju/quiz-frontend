@@ -8,6 +8,7 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 // import { UserDashboard } from "../pages/user/UserDashboard";
 import UserDashboard from "../pages/user/UserDashboard";
 import CategoryPage from "../pages/admin/CategoryPage";
+import CategoryManagement from "../pages/admin/categoryManagement/CategoryManagement";
 //import CategoryPage from "../pages/admin/categoryManagement/CategoryPage";
 import PrivateLayout from "../layout/PrivateLayout";
 import { useAuth } from "../context/AuthContext";
@@ -56,7 +57,9 @@ const AppRoutes = () => {
     }
   >
     <Route path="dashboard" element={<AdminDashboard />} />
-    <Route path="category" element={<CategoryPage />} />
+    {/* <Route path="category" element={<CategoryPage />} /> */}
+    <Route path="category" element={<CategoryManagement />} />
+
     <Route path="difficultyLevel" element={<DifficultyLevelPage />} />
     <Route path="questions" element={<QuestionManagement />} />
     <Route path="answers" element={<AnswerManagement />} />

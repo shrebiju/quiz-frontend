@@ -1,7 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import ButtonCard from './ButtonCard';
 
-const ConfirmationDialog = ({
+const ConfirmationPage = ({
   isOpen,
   onClose,
   onConfirm,
@@ -43,4 +43,4 @@ const ConfirmationDialog = ({
   );
 };
 
-export default ConfirmationDialog;
+export default ConfirmationPage;

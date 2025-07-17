@@ -1,21 +1,21 @@
-// src/services/categoryService.js
-import axios from "../axios";
+import axios from '../utils/axios';
 
 export const fetchCategories = async () => {
-  const response = await axios.get("/admin/categories");
-  return response.data.data;
+  const response = await axios.get('/api/admin/categories');
+  return response.data;
 };
 
 export const createCategory = async (data) => {
-  const response = await axios.post("/admin/categories", data);
-  return response.data.data;
+  const response = await axios.post('/api/admin/categories', data);
+  return response.data;
 };
 
 export const updateCategory = async (id, data) => {
-  const response = await axios.put(`/admin/categories/${id}`, data);
-  return response.data.data;
+  const response = await axios.put(`/api/admin/categories/${id}`, data);
+  return response.data;
 };
 
 export const deleteCategory = async (id) => {
-  await axios.delete(`/admin/categories/${id}`);
+  const response = await axios.delete(`/api/admin/categories/${id}`);
+  return response.data;
 };
