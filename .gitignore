@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables
+.env                
+# .env.*              # Captures all .env variants (e.g., .env.local, .env.development)
+# !.env.example       # Keep the example file as a template
