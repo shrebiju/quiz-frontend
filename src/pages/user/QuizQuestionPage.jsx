@@ -3,7 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import ButtonCard from '../../components/ButtonCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import Timer from '../../components/Timer'; // Import the Timer component
+import Timer from '../../components/Timer';
+import * as Yup from 'yup';
 
 const QuizPlayer = () => {
   const { id } = useParams();
@@ -16,6 +17,14 @@ const QuizPlayer = () => {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [validationError, setValidationError] = useState('');
+
+  // Validation schema for current question
+  const answerSchema = Yup.object().shape({
+    answer: Yup.string()
+      .required('Please select an answer before continuing')
+      .nullable()
+  });
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -48,21 +57,40 @@ const QuizPlayer = () => {
       ...prev,
       [questionId]: answerId
     }));
+    setValidationError(''); // Clear validation error when selecting an answer
   };
 
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
+  const validateCurrentAnswer = async () => {
+    try {
+      await answerSchema.validate({
+        answer: selectedAnswers[questions[currentQuestionIndex].id] || null
+      });
+      return true;
+    } catch (err) {
+      setValidationError(err.message);
+      return false;
+    }
+  };
+
+  const handleNext = async () => {
+    const isValid = await validateCurrentAnswer();
+    if (isValid && currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setValidationError('');
     }
   };
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setValidationError('');
     }
   };
 
   const handleSubmit = async () => {
+    const isValid = await validateCurrentAnswer();
+    if (!isValid) return;
+
     try {
       const answers = questions.map(question => ({
         question_id: question.id,
@@ -79,7 +107,7 @@ const QuizPlayer = () => {
           score: response.data.score,
           totalQuestions: questions.length,
           quizTitle: quiz.title,
-          timeSpent: timeLimit - (location.state?.timeLeft || 0) // Use timeLeft from Timer if available
+          timeSpent: timeLimit - (location.state?.timeLeft || 0)
         }
       });
     } catch (err) {
@@ -133,6 +161,10 @@ const QuizPlayer = () => {
             </div>
           ))}
         </div>
+
+        {validationError && (
+          <div className="mt-4 text-red-500 text-sm">{validationError}</div>
+        )}
       </div>
 
       <div className="flex justify-between">
@@ -150,6 +182,7 @@ const QuizPlayer = () => {
             onClick={handleSubmit}
             color="primary"
             size="medium"
+            disabled={!selectedAnswers[currentQuestion.id]}
           >
             Submit Quiz
           </ButtonCard>
@@ -158,6 +191,7 @@ const QuizPlayer = () => {
             onClick={handleNext}
             color="primary"
             size="medium"
+            disabled={!selectedAnswers[currentQuestion.id]}
           >
             Next
           </ButtonCard>
